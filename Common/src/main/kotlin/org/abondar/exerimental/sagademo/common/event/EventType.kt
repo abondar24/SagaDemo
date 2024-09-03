@@ -1,4 +1,4 @@
-package org.abondar.exerimental.sagademo.common.events
+package org.abondar.exerimental.sagademo.common.event
 
 enum class EventType {
 
