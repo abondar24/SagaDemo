@@ -4,10 +4,9 @@ plugins {
 rootProject.name = "SagaDemo"
 
 include(
-    "Common"
 //    "orchestrator-order-service",
 //    "choreography-order-service",
 //    "payment-service",
 //    "inventory-service",
-//    "notification-service"
+    "Notification"
 )
