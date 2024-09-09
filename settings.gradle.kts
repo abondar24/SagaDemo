@@ -6,5 +6,6 @@ rootProject.name = "SagaDemo"
 include(
     "Notification",
     "Payment",
+    "Inventory",
     "Message"
 )
