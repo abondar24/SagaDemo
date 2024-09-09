@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface PaymentDao : JpaRepository<Payment,Long>{
 
-  fun deleteByOrderId(@Param("orderId") orderId: String): Int
+  fun deleteByOrderId(@Param("orderId") orderId: String)
 
 }
