@@ -69,7 +69,7 @@ class PaymentRouteTest : CamelTestSupport() {
     fun `test cancel payment route`() {
         val paymentMessage = PaymentMessage("test", BigDecimal(23.44), "EUR", "CARD")
 
-        val mockCancelOrderNotify = getMockEndpoint("mock:notifyOrderCancellation")
+        val mockCancelOrderNotify = getMockEndpoint("mock:jms:queue::notifyOrderCancellation")
 
         AdviceWith.adviceWith(context, "cancelPaymentRoute") {
             it.replaceFromWith("direct:cancelPayment")
@@ -87,7 +87,8 @@ class PaymentRouteTest : CamelTestSupport() {
         verify(paymentDao, times(1)).deleteByOrderId(anyString())
 
         mockCancelOrderNotify.apply {
-            expectedMessageCount(1) // Adjust as needed
+            expectedMessageCount(1)
+            assertIsSatisfied()
         }
 
     }

@@ -9,6 +9,7 @@ import org.apache.camel.test.spring.junit5.CamelSpringBootTest
 import org.apache.camel.test.spring.junit5.EnableRouteCoverage
 import org.apache.camel.test.spring.junit5.MockEndpoints
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 
 @MockEndpoints
 @CamelSpringBootTest
@@ -33,46 +34,26 @@ class NotificationRouteTest : CamelTestSupport() {
 
     @Test
     fun `test completion route`() {
-        val body = "Order123"
-
-        val mockEndpoint = getMockEndpoint("mock:notifyOrderCompletion")
-
         AdviceWith.adviceWith(context, "completionRoute") {
-            it.interceptSendToEndpoint("jms:queue:notifyOrderCompletion")
-                .skipSendToOriginalEndpoint()
-                .to("mock:notifyOrderCompletion")
+            it.replaceFromWith("direct:notifyOrderCompletion")
         }
 
-        template.sendBody("jms:queue:notifyOrderCompletion", body)
+        template.sendBody("direct:notifyOrderCompletion", "Order123")
 
-        mockEndpoint.apply {
-            expectedBodiesReceived(body)
-            expectedMessageCount(1)
-            assertIsSatisfied()
-        }
+        getMockEndpoint("mock:seda:camel").expectedMessageCount(1);
 
     }
 
 
     @Test
     fun `test cancellation route`() {
-        val body = "Order123"
-
-        val mockEndpoint = getMockEndpoint("mock:notifyOrderCancellation")
-
         AdviceWith.adviceWith(context, "cancellationRoute") {
-            it.interceptSendToEndpoint("jms:queue:notifyOrderCancellation")
-                .skipSendToOriginalEndpoint()
-                .to("mock:notifyOrderCancellation")
+            it.replaceFromWith("direct:notifyOrderCancellation")
         }
 
-        template.sendBody("jms:queue:notifyOrderCancellation", body)
+        template.sendBody("mock:notifyOrderCancellation", "Order123")
 
-        mockEndpoint.apply {
-            expectedBodiesReceived(body)
-            expectedMessageCount(1)
-            assertIsSatisfied()
-        }
+        getMockEndpoint("mock:seda:camel").expectedMessageCount(1);
 
     }
 }

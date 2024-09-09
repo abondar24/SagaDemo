@@ -19,6 +19,7 @@ class NotificationRoute : RouteBuilder() {
                 logger.info("Got notification for order completion: $payload")
 
             }
+            .to("seda:camel")
 
         from("jms:queue:notifyOrderCancellation")
             .routeId("cancellationRoute")
@@ -26,6 +27,7 @@ class NotificationRoute : RouteBuilder() {
                 val payload = exchange.getIn().getBody(String::class.java)
                 logger.info("Got notification for order cancellation: $payload")
             }
+            .to("seda:camel")
 
     }
 

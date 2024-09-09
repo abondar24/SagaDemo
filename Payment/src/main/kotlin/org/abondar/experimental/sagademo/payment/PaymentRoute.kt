@@ -12,8 +12,6 @@ class PaymentRoute(private val paymentDao: PaymentDao) : RouteBuilder() {
 
         onException(Exception::class.java)
             .handled(true)
-            .log("Exception occurred: \${exception.message}")
-            .setHeader("orderId", simple("\${body.orderId}"))
             .to("jms:queue:notifyOrderCancellation")
 
         from("jms:queue:processPayment")
