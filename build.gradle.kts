@@ -37,6 +37,7 @@ subprojects {
         implementation("org.apache.camel.springboot:camel-spring-boot-starter:4.7.0")
         implementation("org.apache.camel.springboot:camel-jms-starter:4.7.0")
         implementation("org.apache.camel.springboot:camel-lra-starter:4.7.0")
+        implementation("org.flywaydb:flyway-core:10.15.0")
 
         runtimeOnly("com.h2database:h2")
 
