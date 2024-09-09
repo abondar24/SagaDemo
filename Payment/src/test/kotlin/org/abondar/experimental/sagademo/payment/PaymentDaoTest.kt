@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 
 @SpringJUnitConfig
 @DataJpaTest
-class PaymentDtoTest {
+class PaymentDaoTest {
 
     @Autowired
     lateinit var dao: PaymentDao
