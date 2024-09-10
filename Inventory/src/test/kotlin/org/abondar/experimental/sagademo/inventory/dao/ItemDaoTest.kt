@@ -30,6 +30,19 @@ class ItemDaoTest {
     }
 
     @Test
+    fun `find item by item id test`(){
+        val item = Item(itemId = UUID.randomUUID().toString(), name = "test", quantity = 1)
+        dao.save(item)
+
+        val result = dao.findByItemIdIn(listOf(item.itemId))
+
+        assertNotNull(result)
+        assertTrue(result.isNotEmpty())
+        assertEquals(result.size, 1)
+    }
+
+
+    @Test
     fun `update item quantity test`() {
         val item = Item(itemId = UUID.randomUUID().toString(), name = "test", quantity = 1)
         dao.save(item)

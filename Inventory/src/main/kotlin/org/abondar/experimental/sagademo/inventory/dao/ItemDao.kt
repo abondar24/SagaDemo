@@ -1,6 +1,5 @@
 package org.abondar.experimental.sagademo.inventory.dao
 
-import jakarta.transaction.Transactional
 import org.abondar.experimental.sagademo.inventory.data.Item
 import org.abondar.experimental.sagademo.inventory.data.OrderInventory
 import org.springframework.data.jpa.repository.JpaRepository
@@ -13,8 +12,10 @@ import org.springframework.stereotype.Repository
 interface ItemDao : JpaRepository<Item, Long> {
 
 
+    @Query("SELECT i FROM Item i WHERE i.itemId IN :itemIds")
+    fun findByItemIdIn(@Param("itemIds") itemIds: List<String>): List<Item>
+
     @Modifying(clearAutomatically = true)
-    @Transactional
     @Query("UPDATE Item i SET i.quantity = :quantity WHERE i.itemId = :itemId")
     fun updateQuantity(@Param("itemId") itemId: String, @Param("quantity") quantity: Int)
 
