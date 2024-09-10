@@ -21,5 +21,5 @@ interface ItemDao : JpaRepository<Item, Long> {
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Item i SET i.orderInventory = :orderInventory WHERE i.itemId = :itemId")
-    fun updateInventory(@Param("itemId") itemId: String, @Param("orderInventory") orderInventory: OrderInventory)
+    fun updateInventory(@Param("itemId") itemId: String, @Param("orderInventory") orderInventory: OrderInventory?)
 }
