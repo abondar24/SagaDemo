@@ -5,5 +5,5 @@ dependencies {
 
 tasks.bootJar {
     enabled = true
-    mainClass.set("org.abondar.experimental.sagademo.inventory.InventoryApplication")
+    mainClass.set("org.abondar.experimental.sagademo.order.OrderApplication")
 }

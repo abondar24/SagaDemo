@@ -7,5 +7,6 @@ include(
     "Notification",
     "Payment",
     "Inventory",
+    "Order",
     "Message"
 )
