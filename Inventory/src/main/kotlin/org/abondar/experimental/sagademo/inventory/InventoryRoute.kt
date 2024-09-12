@@ -21,12 +21,13 @@ class InventoryRoute(
             .routeId("inventoryRoute")
             .process(processor)
             .log("Inventory processed")
+            .end()
 
         from("jms:queue:revertInventory")
             .routeId("revertInventoryRoute")
             .log("Revert inventory")
             .process(cancelProcessor)
-            .to("jms:queue:notifyOrderCancellation")
+            .end()
 
     }
 }

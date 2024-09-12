@@ -87,14 +87,10 @@ class InventoryRouteTest : CamelTestSupport() {
     fun `test revert inventory route`() {
         val inventoryMessage = InventoryMessage("test", listOf(ItemMessage("test", 1)))
 
-        val mockEndpoint = getMockEndpoint("mock:jms:queue::notifyOrderCancellation")
 
         AdviceWith.adviceWith(context, "revertInventoryRoute") {
             it.replaceFromWith("direct:revertInventory")
 
-            it.interceptSendToEndpoint("jms:queue:notifyOrderCancellation")
-                .skipSendToOriginalEndpoint()
-                .to(mockEndpoint.endpointUri)
 
         }
 
@@ -108,10 +104,6 @@ class InventoryRouteTest : CamelTestSupport() {
         verify(itemDao, times(1)).updateQuantity("test",1)
         verify(orderInventoryDao, times(1)).deleteByOrderId(inventoryMessage.orderId)
 
-        mockEndpoint.apply {
-            expectedMessageCount(1)
-            assertIsSatisfied()
-        }
 
     }
 

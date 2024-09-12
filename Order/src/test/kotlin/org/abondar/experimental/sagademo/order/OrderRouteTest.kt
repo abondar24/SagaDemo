@@ -45,8 +45,8 @@ class OrderRouteTest : CamelTestSupport() {
     }
 
     @Test
-    fun `test create order route`(){
-        val orderMessage = OrderMessage("test","test","test","test")
+    fun `test create order route`() {
+        val orderMessage = OrderMessage("test", "test", "test", "test")
         val order = Order(
             orderId = orderMessage.orderId,
             shippingAddress = orderMessage.shippingAddress,
@@ -54,44 +54,31 @@ class OrderRouteTest : CamelTestSupport() {
             recipientLastName = orderMessage.recipientLastName,
         )
 
-        AdviceWith.adviceWith(context,"orderRoute") {
+        AdviceWith.adviceWith(context, "orderRoute") {
             it.replaceFromWith("direct:createOrder")
         }
 
         `when`(orderDao.save(order)).thenReturn(order)
 
-        template.sendBody("direct:createOrder",orderMessage)
+        template.sendBody("direct:createOrder", orderMessage)
 
         verify(orderDao, times(1)).save(order)
 
     }
 
     @Test
-    fun `test cancel order route`(){
-        val orderMessage = OrderMessage("test","test","test","test")
+    fun `test cancel order route`() {
+        val orderMessage = OrderMessage("test", "test", "test", "test")
 
-        val mockEndpoint  = getMockEndpoint("mock:jms:queue:notifyOrderCancellation")
-
-        AdviceWith.adviceWith(context,"cancelOrderRoute") {
+        AdviceWith.adviceWith(context, "cancelOrderRoute") {
             it.replaceFromWith("direct:cancelOrder")
-
-            it.interceptSendToEndpoint("jms:queue:notifyOrderCancellation")
-                .skipSendToOriginalEndpoint()
-                .to(mockEndpoint.endpointUri)
-
-
         }
 
         doNothing().`when`(orderDao).deleteByOrderId(anyString())
 
-        template.sendBody("direct:cancelOrder",orderMessage)
+        template.sendBody("direct:cancelOrder", orderMessage)
 
         verify(orderDao, times(1)).deleteByOrderId(anyString())
-
-       mockEndpoint.apply {
-            expectedMessageCount(1)
-            assertIsSatisfied()
-        }
 
 
     }

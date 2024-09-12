@@ -30,12 +30,13 @@ class OrderRoute(private val orderDao: OrderDao) : RouteBuilder() {
             }
             .bean(orderDao, "save")
             .log("Order saved successfully")
+            .end()
 
 
         from("jms:queue:cancelOrder")
             .routeId("cancelOrderRoute")
             .bean(orderDao, "deleteByOrderId")
             .log("Order cancelled")
-            .to("jms:queue:notifyOrderCancellation")
+            .end()
     }
 }

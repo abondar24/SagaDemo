@@ -30,6 +30,7 @@ class PaymentRoute(private val paymentDao: PaymentDao) : RouteBuilder() {
             }
             .bean(paymentDao,"save")
             .log("Payment Processed successfully")
+            .end()
 
 
         from("jms:queue:cancelPayment")
@@ -37,7 +38,7 @@ class PaymentRoute(private val paymentDao: PaymentDao) : RouteBuilder() {
             .log("Cancel Payment")
             .bean(paymentDao, "deleteByOrderId")
             .log("Payment Cancelled")
-            .to("jms:queue:notifyOrderCancellation")
+            .end()
     }
 
 }

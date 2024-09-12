@@ -22,11 +22,6 @@ spring:
 server:
   port: 8083
 
-camel:
-  lra:
-    coordinator-url: http://localhost:8080/lra-coordinator  # Assuming the LRA Coordinator runs on port 8080
-    participant-auto-join: true
-    timeout: 300000
 
 logging:
   level:
