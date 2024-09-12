@@ -1,33 +1,23 @@
 package org.abondar.experimental.sagademo.order
 
-import org.abondar.experimental.sagademo.message.OrderMessage
 import org.apache.camel.builder.RouteBuilder
-
 import org.springframework.stereotype.Component
 
 @Component
-class OrderRoute(private val orderDao: OrderDao) : RouteBuilder() {
+class OrderRoute(
+    private val orderDao: OrderDao,
+    private val orderProcessor: OrderProcessor
+) : RouteBuilder() {
 
     override fun configure() {
 
         onException(Exception::class.java)
             .handled(true)
-            .to("jms:queue:notifyOrderCancellation")
+            .log("Exception occured : ${body()}")
 
         from("jms:queue:createOrder")
             .routeId("orderRoute")
-            .process { exchange ->
-
-                val orderRequest = exchange.getIn().getBody(OrderMessage::class.java)
-                val order = Order(
-                    orderId = orderRequest.orderId,
-                    shippingAddress = orderRequest.shippingAddress,
-                    recipientName = orderRequest.recipientName,
-                    recipientLastName = orderRequest.recipientLastName
-                )
-
-                exchange.getIn().body = order
-            }
+            .process(orderProcessor)
             .bean(orderDao, "save")
             .log("Order saved successfully")
             .end()
@@ -35,7 +25,7 @@ class OrderRoute(private val orderDao: OrderDao) : RouteBuilder() {
 
         from("jms:queue:cancelOrder")
             .routeId("cancelOrderRoute")
-            .bean(orderDao, "deleteByOrderId")
+            .bean(orderDao, "deleteByOrderId(\${header.orderId})")
             .log("Order cancelled")
             .end()
     }

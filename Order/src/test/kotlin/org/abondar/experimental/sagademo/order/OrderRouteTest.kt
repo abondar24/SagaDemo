@@ -11,10 +11,8 @@ import org.apache.camel.test.spring.junit5.CamelSpringBootTest
 import org.apache.camel.test.spring.junit5.EnableRouteCoverage
 import org.apache.camel.test.spring.junit5.MockEndpoints
 import org.junit.jupiter.api.Test
-import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.*
-
 
 @MockEndpoints
 @CamelSpringBootTest
@@ -24,12 +22,9 @@ class OrderRouteTest : CamelTestSupport() {
     @Mock
     lateinit var orderDao: OrderDao
 
-    @InjectMocks
-    lateinit var orderRoute: OrderRoute
-
-
     override fun createRouteBuilder(): RouteBuilder {
-        return orderRoute
+        val orderProcessor = OrderProcessor()
+        return OrderRoute(orderDao, orderProcessor)
     }
 
     override fun createCamelContext(): DefaultCamelContext {
@@ -46,9 +41,9 @@ class OrderRouteTest : CamelTestSupport() {
 
     @Test
     fun `test create order route`() {
-        val orderMessage = OrderMessage("test", "test", "test", "test")
+        val orderMessage = OrderMessage("test", "test", "test")
         val order = Order(
-            orderId = orderMessage.orderId,
+            orderId = "test",
             shippingAddress = orderMessage.shippingAddress,
             recipientName = orderMessage.recipientName,
             recipientLastName = orderMessage.recipientLastName,
@@ -60,7 +55,12 @@ class OrderRouteTest : CamelTestSupport() {
 
         `when`(orderDao.save(order)).thenReturn(order)
 
-        template.sendBody("direct:createOrder", orderMessage)
+        template.sendBodyAndHeaders(
+            "direct:createOrder", null, mapOf(
+                "OrderMessage" to orderMessage,
+                "OrderId" to order.orderId
+            )
+        )
 
         verify(orderDao, times(1)).save(order)
 
@@ -68,7 +68,7 @@ class OrderRouteTest : CamelTestSupport() {
 
     @Test
     fun `test cancel order route`() {
-        val orderMessage = OrderMessage("test", "test", "test", "test")
+        val orderMessage = OrderMessage("test", "test", "test")
 
         AdviceWith.adviceWith(context, "cancelOrderRoute") {
             it.replaceFromWith("direct:cancelOrder")
@@ -76,7 +76,7 @@ class OrderRouteTest : CamelTestSupport() {
 
         doNothing().`when`(orderDao).deleteByOrderId(anyString())
 
-        template.sendBody("direct:cancelOrder", orderMessage)
+        template.sendBodyAndHeader("direct:cancelOrder", null, "OrderId", "test")
 
         verify(orderDao, times(1)).deleteByOrderId(anyString())
 
