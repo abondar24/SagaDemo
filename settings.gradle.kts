@@ -8,5 +8,6 @@ include(
     "Payment",
     "Inventory",
     "Order",
-    "Message"
+    "Message",
+    "Orchestrator"
 )
