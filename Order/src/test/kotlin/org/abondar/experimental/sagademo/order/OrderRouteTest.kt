@@ -68,8 +68,6 @@ class OrderRouteTest : CamelTestSupport() {
 
     @Test
     fun `test cancel order route`() {
-        val orderMessage = OrderMessage("test", "test", "test")
-
         AdviceWith.adviceWith(context, "cancelOrderRoute") {
             it.replaceFromWith("direct:cancelOrder")
         }

@@ -13,7 +13,7 @@ class OrderRoute(
 
         onException(Exception::class.java)
             .handled(true)
-            .log("Exception occured : ${body()}")
+            .log("Exception occurred : ${body()}")
 
         from("jms:queue:createOrder")
             .routeId("orderRoute")
