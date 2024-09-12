@@ -18,25 +18,24 @@ class InventoryProcessor(
 
     @Transactional
     override fun process(exchange: Exchange?) {
-        val  inventoryMessage = exchange?.getIn()?.getBody(InventoryMessage::class.java)
 
-        if (inventoryMessage != null) {
+        val orderId = exchange?.getIn()?.getHeader("OrderId", String::class.java)
 
-            val itemIds: List<String> = inventoryMessage.items.map { it.itemId }
-            val items = itemDao.findByItemIdIn(itemIds)
+        exchange?.getIn()?.getHeader("InventoryMessage", InventoryMessage::class.java)?.let { inventoryMessage ->
+             orderId?.let { orderId ->
+                 val itemIds: List<String> = inventoryMessage.items.map { it.itemId }
+                 val items = itemDao.findByItemIdIn(itemIds)
 
-            val orderInventory = OrderInventory(orderId = inventoryMessage.orderId, items = items)
-            orderInventoryDao.save(orderInventory)
+                 val orderInventory = OrderInventory(orderId = orderId, items = items)
+                 orderInventoryDao.save(orderInventory)
 
-            inventoryMessage.items.forEach { item ->
-                itemDao.updateInventory(item.itemId,orderInventory)
-                itemDao.updateQuantity(item.itemId,item.quantity)
-            }
+                 inventoryMessage.items.forEach { item ->
+                     itemDao.updateInventory(item.itemId, orderInventory)
+                     itemDao.updateQuantity(item.itemId, item.quantity)
+                 }
+             } ?: throw IllegalArgumentException("Order id missing")
 
-        } else {
-            throw IllegalArgumentException("Invalid inventory data")
-        }
-
+        } ?: throw IllegalArgumentException("Invalid inventoryMessage")
 
     }
 }

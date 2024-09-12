@@ -17,18 +17,23 @@ class InventoryCancelProcessor(
 
     @Transactional
     override fun process(exchange: Exchange?) {
-        val inventoryMessage = exchange?.getIn()?.getBody(InventoryMessage::class.java)
-        if (inventoryMessage != null) {
 
-            inventoryMessage.items.forEach { item ->
-                itemDao.updateInventory(item.itemId, null)
-                itemDao.updateQuantity(item.itemId, item.quantity)
-            }
+        val orderId = exchange?.getIn()?.getHeader("OrderId", String::class.java)
 
-            orderInventoryDao.deleteByOrderId(inventoryMessage.orderId)
+        exchange?.getIn()?.getHeader("InventoryMessage", InventoryMessage::class.java)?.let { inventoryMessage ->
 
-        } else {
-            throw IllegalArgumentException("Invalid inventory data")
-        }
+            orderId?.let { orderId ->
+                inventoryMessage.items.forEach { item ->
+                    itemDao.updateInventory(item.itemId, null)
+                    itemDao.updateQuantity(item.itemId, item.quantity)
+                }
+
+                orderInventoryDao.deleteByOrderId(orderId)
+            } ?: throw IllegalArgumentException("Order id missing")
+
+
+        } ?: throw IllegalArgumentException("Invalid inventory data")
+
+
     }
 }

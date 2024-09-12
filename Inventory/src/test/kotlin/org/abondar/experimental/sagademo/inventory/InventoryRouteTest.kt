@@ -59,7 +59,7 @@ class InventoryRouteTest : CamelTestSupport() {
 
     @Test
     fun `test process inventory route`() {
-        val inventoryMessage = InventoryMessage("test", listOf(ItemMessage("test", 1)))
+        val inventoryMessage = InventoryMessage(listOf(ItemMessage("test", 1)))
         val item = Item(itemId = "test", name = "test", quantity = 1)
         val orderInventory = OrderInventory(orderId = "test", items =  listOf(item))
 
@@ -73,7 +73,10 @@ class InventoryRouteTest : CamelTestSupport() {
         doNothing().`when`(itemDao).updateQuantity("test",1)
 
 
-        template.sendBody("direct:inventoryRoute", inventoryMessage)
+        template.sendBodyAndHeaders("direct:inventoryRoute",null, mapOf(
+            "InventoryMessage" to inventoryMessage,
+            "OrderId" to "test",
+        ))
 
         verify(itemDao, times(1)).findByItemIdIn(anyList())
         verify(itemDao, times(1)).updateInventory("test",orderInventory)
@@ -85,7 +88,7 @@ class InventoryRouteTest : CamelTestSupport() {
 
     @Test
     fun `test revert inventory route`() {
-        val inventoryMessage = InventoryMessage("test", listOf(ItemMessage("test", 1)))
+        val inventoryMessage = InventoryMessage(listOf(ItemMessage("test", 1)))
 
 
         AdviceWith.adviceWith(context, "revertInventoryRoute") {
@@ -96,13 +99,16 @@ class InventoryRouteTest : CamelTestSupport() {
 
         doNothing().`when`(itemDao).updateInventory("test",null)
         doNothing().`when`(itemDao).updateQuantity("test",1)
-        doNothing().`when`(orderInventoryDao).deleteByOrderId(inventoryMessage.orderId)
+        doNothing().`when`(orderInventoryDao).deleteByOrderId("test")
 
-        template.sendBody("direct:revertInventory", inventoryMessage)
+        template.sendBodyAndHeaders("direct:revertInventory",null,mapOf(
+            "InventoryMessage" to inventoryMessage,
+            "OrderId" to "test",
+        ))
 
         verify(itemDao, times(1)).updateInventory("test",null)
         verify(itemDao, times(1)).updateQuantity("test",1)
-        verify(orderInventoryDao, times(1)).deleteByOrderId(inventoryMessage.orderId)
+        verify(orderInventoryDao, times(1)).deleteByOrderId("test")
 
 
     }

@@ -15,7 +15,7 @@ class InventoryRoute(
 
         onException(Exception::class.java)
             .handled(true)
-            .to("jms:queue:notifyOrderCancellation")
+            .log("Exception occured : ${body()}")
 
         from("jms:queue:processInventory")
             .routeId("inventoryRoute")
