@@ -9,5 +9,6 @@ include(
     "Inventory",
     "Order",
     "Message",
-    "Orchestrator"
+    "Orchestrator",
+    "OrderApi"
 )
