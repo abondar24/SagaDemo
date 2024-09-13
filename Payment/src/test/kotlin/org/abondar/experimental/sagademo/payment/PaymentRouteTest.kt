@@ -25,7 +25,7 @@ class PaymentRouteTest : CamelTestSupport() {
     @Mock
     lateinit var paymentDao: PaymentDao
 
-    lateinit var objectMapper: ObjectMapper
+    private lateinit var objectMapper: ObjectMapper
 
     override fun createRouteBuilder(): RouteBuilder {
         objectMapper = ObjectMapper().registerKotlinModule()
@@ -64,7 +64,12 @@ class PaymentRouteTest : CamelTestSupport() {
 
         `when`(paymentDao.save(payment)).thenReturn(payment)
 
-        template.sendBodyAndHeader("direct:processPayment", objectMapper.writeValueAsString(paymentMessage), "OrderId", "test")
+        template.sendBodyAndHeader(
+            "direct:processPayment",
+            objectMapper.writeValueAsString(paymentMessage),
+            "OrderId",
+            "test"
+        )
 
         verify(paymentDao, times(1)).save(payment)
 

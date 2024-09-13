@@ -1,7 +1,6 @@
 package org.abondar.experimental.sagademo.order
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.abondar.experimental.sagademo.message.OrderMessage
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory
@@ -23,7 +22,7 @@ import org.mockito.Mockito.*
 class OrderRouteTest : CamelTestSupport() {
 
 
-    lateinit var objectMapper: ObjectMapper
+    private lateinit var objectMapper: ObjectMapper
 
     @Mock
     lateinit var orderDao: OrderDao

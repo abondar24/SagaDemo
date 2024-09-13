@@ -1,5 +1,7 @@
 package org.abondar.experimental.sagademo.inventory
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.abondar.experimental.sagademo.inventory.dao.ItemDao
 import org.abondar.experimental.sagademo.inventory.dao.OrderInventoryDao
 import org.abondar.experimental.sagademo.inventory.data.Item
@@ -20,7 +22,6 @@ import org.apache.camel.test.spring.junit5.MockEndpoints
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyList
-import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.*
 
@@ -35,13 +36,17 @@ class InventoryRouteTest : CamelTestSupport() {
     @Mock
     lateinit var orderInventoryDao: OrderInventoryDao
 
-    @InjectMocks
-    lateinit var inventoryProcessor: InventoryProcessor
+    private lateinit var inventoryProcessor: InventoryProcessor
 
-    @InjectMocks
-    lateinit var inventoryCancelProcessor: InventoryCancelProcessor
+    private lateinit var inventoryCancelProcessor: InventoryCancelProcessor
+
+    private lateinit var objectMapper: ObjectMapper
 
     override fun createRouteBuilder(): RoutesBuilder {
+        objectMapper = ObjectMapper().registerKotlinModule()
+        inventoryProcessor = InventoryProcessor(itemDao, orderInventoryDao, objectMapper)
+        inventoryCancelProcessor = InventoryCancelProcessor(itemDao, orderInventoryDao, objectMapper)
+
         return InventoryRoute(inventoryProcessor, inventoryCancelProcessor)
     }
 
@@ -61,7 +66,7 @@ class InventoryRouteTest : CamelTestSupport() {
     fun `test process inventory route`() {
         val inventoryMessage = InventoryMessage(listOf(ItemMessage("test", 1)))
         val item = Item(itemId = "test", name = "test", quantity = 1)
-        val orderInventory = OrderInventory(orderId = "test", items =  listOf(item))
+        val orderInventory = OrderInventory(orderId = "test", items = listOf(item))
 
         AdviceWith.adviceWith(context, "inventoryRoute") {
             it.replaceFromWith("direct:inventoryRoute")
@@ -69,18 +74,20 @@ class InventoryRouteTest : CamelTestSupport() {
 
         `when`(itemDao.findByItemIdIn(anyList())).thenReturn(listOf(item))
         `when`(orderInventoryDao.save(any(OrderInventory::class.java))).thenReturn(orderInventory)
-        doNothing().`when`(itemDao).updateInventory("test",orderInventory)
-        doNothing().`when`(itemDao).updateQuantity("test",1)
+        doNothing().`when`(itemDao).updateInventory("test", orderInventory)
+        doNothing().`when`(itemDao).updateQuantity("test", 1)
 
 
-        template.sendBodyAndHeaders("direct:inventoryRoute",null, mapOf(
-            "InventoryMessage" to inventoryMessage,
-            "OrderId" to "test",
-        ))
+        template.sendBodyAndHeader(
+            "direct:inventoryRoute",
+            objectMapper.writeValueAsString(inventoryMessage),
+            "OrderId",
+            "test"
+        )
 
         verify(itemDao, times(1)).findByItemIdIn(anyList())
-        verify(itemDao, times(1)).updateInventory("test",orderInventory)
-        verify(itemDao, times(1)).updateQuantity("test",1)
+        verify(itemDao, times(1)).updateInventory("test", orderInventory)
+        verify(itemDao, times(1)).updateQuantity("test", 1)
         verify(orderInventoryDao, times(1)).save(any(OrderInventory::class.java))
 
 
@@ -90,24 +97,22 @@ class InventoryRouteTest : CamelTestSupport() {
     fun `test revert inventory route`() {
         val inventoryMessage = InventoryMessage(listOf(ItemMessage("test", 1)))
 
-
         AdviceWith.adviceWith(context, "revertInventoryRoute") {
             it.replaceFromWith("direct:revertInventory")
-
-
         }
 
-        doNothing().`when`(itemDao).updateInventory("test",null)
-        doNothing().`when`(itemDao).updateQuantity("test",1)
+        doNothing().`when`(itemDao).updateInventory("test", null)
+        doNothing().`when`(itemDao).updateQuantity("test", 1)
         doNothing().`when`(orderInventoryDao).deleteByOrderId("test")
 
-        template.sendBodyAndHeaders("direct:revertInventory",null,mapOf(
-            "InventoryMessage" to inventoryMessage,
-            "OrderId" to "test",
-        ))
+        template.sendBodyAndHeader(
+            "direct:revertInventory", objectMapper.writeValueAsString(inventoryMessage),
+            "OrderId",
+            "test"
+        )
 
-        verify(itemDao, times(1)).updateInventory("test",null)
-        verify(itemDao, times(1)).updateQuantity("test",1)
+        verify(itemDao, times(1)).updateInventory("test", null)
+        verify(itemDao, times(1)).updateQuantity("test", 1)
         verify(orderInventoryDao, times(1)).deleteByOrderId("test")
 
 
