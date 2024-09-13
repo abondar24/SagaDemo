@@ -1,5 +1,7 @@
 package org.abondar.experimental.sagademo.payment
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.abondar.experimental.sagademo.message.PaymentMessage
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory
 import org.apache.camel.builder.AdviceWith
@@ -23,9 +25,12 @@ class PaymentRouteTest : CamelTestSupport() {
     @Mock
     lateinit var paymentDao: PaymentDao
 
-    override fun createRouteBuilder(): RouteBuilder {
+    lateinit var objectMapper: ObjectMapper
 
-        val paymentProcessor = PaymentProcessor()
+    override fun createRouteBuilder(): RouteBuilder {
+        objectMapper = ObjectMapper().registerKotlinModule()
+        val paymentProcessor = PaymentProcessor(objectMapper)
+
         return PaymentRoute(paymentDao, paymentProcessor)
     }
 
@@ -59,12 +64,7 @@ class PaymentRouteTest : CamelTestSupport() {
 
         `when`(paymentDao.save(payment)).thenReturn(payment)
 
-        template.sendBodyAndHeaders(
-            "direct:processPayment", null, mapOf(
-                "PaymentMessage" to paymentMessage,
-                "OrderId" to "test"
-            )
-        )
+        template.sendBodyAndHeader("direct:processPayment", objectMapper.writeValueAsString(paymentMessage), "OrderId", "test")
 
         verify(paymentDao, times(1)).save(payment)
 

@@ -1,23 +1,25 @@
 package org.abondar.experimental.sagademo.payment
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.abondar.experimental.sagademo.message.PaymentMessage
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.springframework.stereotype.Component
 
 @Component
-class PaymentProcessor : Processor {
+class PaymentProcessor(private val objectMapper: ObjectMapper) : Processor {
     override fun process(exchange: Exchange?) {
-        val paymentRequest = exchange?.getIn()?.getHeader("PaymentMessage", PaymentMessage::class.java)
+        val request = exchange?.getIn()?.getBody(String::class.java)
         val orderId = exchange?.getIn()?.getHeader("OrderId", String::class.java)
 
-        paymentRequest?.let {
+        request?.let {
+            val paymentMessage = objectMapper.readValue(request, PaymentMessage::class.java)
             orderId?.let {
                 val payment = Payment(
                     orderId = orderId,
-                    sum = paymentRequest.sum,
-                    currency = paymentRequest.currency,
-                    paymentType = paymentRequest.paymentType
+                    sum = paymentMessage.sum,
+                    currency = paymentMessage.currency,
+                    paymentType = paymentMessage.paymentType
                 )
 
                 exchange.getIn().body = payment
