@@ -19,14 +19,14 @@ class OrderRoute(
             .routeId("orderRoute")
             .process(orderProcessor)
             .bean(orderDao, "save")
-            .log("Order saved successfully")
+            .log("Order \${header.orderId} saved successfully")
             .end()
 
 
         from("jms:queue:cancelOrder")
             .routeId("cancelOrderRoute")
             .bean(orderDao, "deleteByOrderId(\${header.orderId})")
-            .log("Order cancelled")
+            .log("Order \${header.orderId} cancelled")
             .end()
     }
 }

@@ -20,15 +20,14 @@ class PaymentRoute(
             .routeId("paymentRoute")
             .process(paymentProcessor)
             .bean(paymentDao, "save")
-            .log("Payment Processed successfully")
+            .log("Payment Processed successfully for order \${header.orderId}")
             .end()
 
 
         from("jms:queue:cancelPayment")
             .routeId("cancelPaymentRoute")
-            .log("Cancel Payment")
             .bean(paymentDao, "deleteByOrderId(\${header.orderId})")
-            .log("Payment Cancelled")
+            .log("Payment Cancelled for order \${header.orderId}")
             .end()
     }
 

@@ -20,12 +20,12 @@ class InventoryRoute(
         from("jms:queue:processInventory")
             .routeId("inventoryRoute")
             .process(processor)
-            .log("Inventory processed")
+            .log("Inventory processed for order \${header.orderId}")
             .end()
 
         from("jms:queue:revertInventory")
             .routeId("revertInventoryRoute")
-            .log("Revert inventory")
+            .log("Revert inventory for order \${header.orderId}")
             .process(cancelProcessor)
             .end()
 
