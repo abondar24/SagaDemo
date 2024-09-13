@@ -1,5 +1,6 @@
 package org.abondar.experimental.sagademo.api
 
+import org.abondar.experimental.sagademo.message.OrderCreateRequest
 import org.abondar.experimental.sagademo.message.OrderMessage
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.model.rest.RestBindingMode
@@ -12,12 +13,12 @@ class OrderApiRoute : RouteBuilder() {
 
         restConfiguration()
             .host("localhost")
-            .port(8080)
+            .port(8020)
             .enableCORS(true)
-            .contextPath("/")
-            .apiContextPath("/doc")
+            .contextPath("/api")
+            .apiContextPath("/api-doc")
             .apiProperty("api.title","Order Saga API")
-            .apiProperty("api.version","v1")
+            .apiProperty("api.version","1")
             .component("servlet")
             .bindingMode(RestBindingMode.auto)
 
@@ -28,7 +29,7 @@ class OrderApiRoute : RouteBuilder() {
             .post()
             .routeId("orderPost")
             .apiDocs(true)
-            .type(OrderMessage::class.java)
+            .type(OrderCreateRequest::class.java)
             .to("jms:queue:startOrderProcessing")
 
             .delete("/{orderId}")

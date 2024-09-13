@@ -10,7 +10,20 @@ server:
   port: 8020
 
 camel:
+  servlet:
+    mapping:
+      context-path: /api/*
   component:
     servlet:
       allow-java-serialized-object: true
       enabled: true
+
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health, info, env, metrics,mappings

@@ -1,5 +1,12 @@
 dependencies {
     implementation(project(":Message"))
+
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+    implementation("org.flywaydb:flyway-core:10.15.0")
+
+    runtimeOnly("com.h2database:h2")
+
 }
 
 

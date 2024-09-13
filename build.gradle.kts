@@ -31,14 +31,11 @@ subprojects {
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
         implementation("org.springframework.boot:spring-boot-starter-artemis")
-        implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+        implementation("org.springframework.boot:spring-boot-starter-actuator")
         implementation("org.springframework.boot:spring-boot-starter-web")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
         implementation("org.apache.camel.springboot:camel-spring-boot-starter:4.7.0")
         implementation("org.apache.camel.springboot:camel-jms-starter:4.7.0")
-        implementation("org.flywaydb:flyway-core:10.15.0")
-
-        runtimeOnly("com.h2database:h2")
 
         testImplementation("org.springframework.boot:spring-boot-starter-test")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
