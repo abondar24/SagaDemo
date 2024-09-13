@@ -7,8 +7,12 @@ spring:
       enabled: false
 
 camel:
-  lra:
-    local-participant-url: http://localhost:8080/lra-coordinator
-    coordinator-url: http://localhost:8080/lra-coordinator
-    coordinator-context-path: lra-coordinator
-    enabled: true
+  component:
+    saga:
+      enabled: true
+
+#  lra:
+#    local-participant-url: http://localhost:8080/lra-coordinator
+#    coordinator-url: http://localhost:8080/lra-coordinator
+#    coordinator-context-path: lra-coordinator
+#    enabled: true

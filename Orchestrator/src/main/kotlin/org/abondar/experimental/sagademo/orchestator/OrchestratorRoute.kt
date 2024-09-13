@@ -1,12 +1,16 @@
 package org.abondar.experimental.sagademo.orchestator
 
+import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
+import org.apache.camel.saga.InMemorySagaService
 import org.springframework.stereotype.Component
 
 
 @Component
-class OrchestratorRoute(private val messageProcessor: MessageProcessor) : RouteBuilder() {
+class OrchestratorRoute(private val messageProcessor: MessageProcessor, private val camelContext: CamelContext) : RouteBuilder() {
     override fun configure() {
+        camelContext.addService(InMemorySagaService())
+
         onException(Exception::class.java)
             .handled(true)
             .log("Exception occurred: \${exception.message}")
