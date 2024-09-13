@@ -29,11 +29,11 @@ class OrderApiRoute : RouteBuilder() {
             .routeId("orderPost")
             .apiDocs(true)
             .type(OrderCreateRequest::class.java)
-            .to("jms:queue:startOrderProcessing")
+            .to("jms:queue:startOrderProcessing?disableReplyTo=true")
 
             .delete("/{orderId}")
             .routeId("orderDelete")
             .apiDocs(true)
-            .to("jms:queue:cancelOrderProcessing")
+            .to("jms:queue:cancelOrderProcessing?disableReplyTo=true")
     }
 }
