@@ -1,5 +1,6 @@
 package org.abondar.experimental.sagademo.orchestator
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.abondar.experimental.sagademo.message.InventoryMessage
 import org.abondar.experimental.sagademo.message.OrderCreateRequest
 import org.abondar.experimental.sagademo.message.OrderMessage
@@ -7,16 +8,15 @@ import org.abondar.experimental.sagademo.message.PaymentMessage
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.springframework.stereotype.Component
-import java.util.*
 
 @Component
-class MessageProcessor : Processor {
+class MessageProcessor(private val objectMapper: ObjectMapper) : Processor {
     override fun process(exchange: Exchange?) {
 
-        val orderId = UUID.randomUUID().toString()
-        exchange?.getIn()?.setHeader("OrderId", orderId)
+        exchange?.getIn()?.getBody(String::class.java)?.let { json ->
 
-        exchange?.getIn()?.getBody(OrderCreateRequest::class.java)?.let { request ->
+            val request = objectMapper.readValue(json, OrderCreateRequest::class.java)
+
             val paymentMessage = PaymentMessage(
                 sum = request.sum,
                 currency = request.currency,
@@ -36,6 +36,9 @@ class MessageProcessor : Processor {
                 items = request.items
             )
             exchange.getIn().setHeader("InventoryMessage", inventoryMessage)
+        } ?: {
+            exchange?.setProperty(Exchange.EXCEPTION_CAUGHT, IllegalArgumentException("OrderCreateRequest is null"))
+            exchange?.getIn()?.setBody(null)
         }
 
     }
