@@ -1,5 +1,8 @@
 package org.abondar.experimental.sagademo.order
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.abondar.experimental.sagademo.message.OrderMessage
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory
 import org.apache.camel.builder.AdviceWith
@@ -19,11 +22,16 @@ import org.mockito.Mockito.*
 @EnableRouteCoverage
 class OrderRouteTest : CamelTestSupport() {
 
+
+    lateinit var objectMapper: ObjectMapper
+
     @Mock
     lateinit var orderDao: OrderDao
 
     override fun createRouteBuilder(): RouteBuilder {
-        val orderProcessor = OrderProcessor()
+        objectMapper = ObjectMapper().registerKotlinModule()
+
+        val orderProcessor = OrderProcessor(objectMapper)
         return OrderRoute(orderDao, orderProcessor)
     }
 
@@ -55,12 +63,11 @@ class OrderRouteTest : CamelTestSupport() {
 
         `when`(orderDao.save(order)).thenReturn(order)
 
-        template.sendBodyAndHeaders(
-            "direct:createOrder", null, mapOf(
-                "OrderMessage" to orderMessage,
-                "OrderId" to order.orderId
-            )
+        template.sendBodyAndHeader(
+            "direct:createOrder", objectMapper.writeValueAsString(orderMessage),
+            "orderId", "test"
         )
+
 
         verify(orderDao, times(1)).save(order)
 
