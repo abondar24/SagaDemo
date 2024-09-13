@@ -11,3 +11,4 @@ camel:
     local-participant-url: http://localhost:8080/lra-coordinator
     coordinator-url: http://localhost:8080/lra-coordinator
     coordinator-context-path: lra-coordinator
+    enabled: true
