@@ -38,9 +38,13 @@ class OrchestratorRoute(private val messageProcessor: MessageProcessor) : RouteB
             .completion("jms:queue:notifyOrderCompletion")
             .end()
 
+        from("jms:queue:cancelOrderProcessing")
+            .to("direct:cancelOrder")
+
         from("direct:cancelOrder")
             .setBody().simple(null)
             .setHeader("OrderId").simple("\${header.OrderId}")
+            .log("Cancelling order processing")
             .to("jms:queue:cancelOrder")
             .to("jms:queue:cancelPayment")
             .to("jms:queue:revertInventory")
