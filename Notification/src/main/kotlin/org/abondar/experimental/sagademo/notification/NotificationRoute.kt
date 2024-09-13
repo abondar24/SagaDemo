@@ -13,20 +13,12 @@ class NotificationRoute : RouteBuilder() {
     override fun configure() {
         from("jms:queue:notifyOrderCompletion")
             .routeId("completionRoute")
-            .log("Received notification event: \${body}")
-            .process { exchange ->
-                val payload = exchange.getIn().getBody(String::class.java)
-                logger.info("Got notification for order completion: $payload")
-
-            }
+            .log("Got notification for order completion: \${header.OrderId}")
             .to("seda:camel")
 
         from("jms:queue:notifyOrderCancellation")
             .routeId("cancellationRoute")
-            .process { exchange ->
-                val payload = exchange.getIn().getBody(String::class.java)
-                logger.info("Got notification for order cancellation: $payload")
-            }
+            .log("Got notification for order cancellation: \${header.OrderId}")
             .to("seda:camel")
 
     }
