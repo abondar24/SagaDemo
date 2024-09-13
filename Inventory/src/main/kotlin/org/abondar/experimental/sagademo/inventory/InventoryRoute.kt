@@ -15,7 +15,7 @@ class InventoryRoute(
 
         onException(Exception::class.java)
             .handled(true)
-            .log("Exception occured : ${body()}")
+            .log("Exception occured : \${exception.message}")
 
         from("jms:queue:processInventory")
             .routeId("inventoryRoute")
