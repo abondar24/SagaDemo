@@ -15,31 +15,26 @@ class MessageProcessor(private val objectMapper: ObjectMapper) : Processor {
 
         exchange?.getIn()?.getBody(String::class.java)?.let { json ->
 
-            val request = objectMapper.readValue(json, OrderCreateRequest::class.java)
+                val request = objectMapper.readValue(json, OrderCreateRequest::class.java)
 
-            val paymentMessage = PaymentMessage(
-                sum = request.sum,
-                currency = request.currency,
-                paymentType = request.paymentType
-            )
+                val paymentMessage = PaymentMessage(
+                    sum = request.sum,
+                    currency = request.currency,
+                    paymentType = request.paymentType
+                )
+                exchange.getIn().setHeader("PaymentMessage", objectMapper.writeValueAsString(paymentMessage))
 
-            exchange.getIn().setHeader("PaymentMessage", paymentMessage)
+                val orderMessage = OrderMessage(
+                    recipientName = request.recipientName,
+                    recipientLastName = request.recipientLastName,
+                    shippingAddress = request.shippingAddress,
+                )
+                exchange.getIn().setHeader("OrderMessage", objectMapper.writeValueAsString(orderMessage))
 
-            val orderMessage = OrderMessage(
-                recipientName = request.recipientName,
-                recipientLastName = request.recipientLastName,
-                shippingAddress = request.shippingAddress,
-            )
-            exchange.getIn().setHeader("OrderMessage", orderMessage)
-
-            val inventoryMessage = InventoryMessage(
-                items = request.items
-            )
-            exchange.getIn().setHeader("InventoryMessage", inventoryMessage)
-        } ?: {
-            exchange?.setProperty(Exchange.EXCEPTION_CAUGHT, IllegalArgumentException("OrderCreateRequest is null"))
-            exchange?.getIn()?.setBody(null)
-        }
-
+                val inventoryMessage = InventoryMessage(
+                    items = request.items
+                )
+                exchange.getIn().setHeader("InventoryMessage", objectMapper.writeValueAsString(inventoryMessage))
+            }
     }
 }
